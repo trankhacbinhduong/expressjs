@@ -1,0 +1,9 @@
+{
+  "name": "expressjs",
+  "version": "1.0.0",
+  "description": "expressjs, nodejs, api",
+  "main": "index.js",
+  "scripts": {},
+  "author": "duo",
+  "license": "ISC"
+}
