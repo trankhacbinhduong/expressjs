@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "expressjs, nodejs, api",
   "main": "index.js",
+  "type": "module",
   "scripts": {},
   "author": "duo",
   "license": "ISC"
