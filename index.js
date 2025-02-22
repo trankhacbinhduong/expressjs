@@ -7,8 +7,6 @@ app.use(express.json())
 
 // Dummy todo list
 const todoList = [
-  { id: 1, title: 'Todo 1', completed: false },
-  { id: 2, title: 'Todo 2', completed: true },
 ]
 
 // Routes for todos
@@ -21,6 +19,31 @@ app.get('/api/v1/todos', (req, res) => {
 
   res.json({ data: filteredTodos })
 })
+
+app.get('/api/v1/statistic/', (req, res) => {
+  const { startDate, endDate } = req.query;
+
+  const start = startDate ? new Date(startDate) : null;
+  const end = endDate ? new Date(endDate) : null;
+  
+  if ((startDate && isNaN(start)) || (endDate && isNaN(end))) {
+    return res.status(400).json({ message: "Invalid date format" });
+  }
+
+  const filteredTodos = todoList.filter((todo) => {
+    const createdAt = new Date(todo.createdAt);
+    return (!start || createdAt >= start) && (!end || createdAt <= end);
+  });
+
+  const completedCount = filteredTodos.filter(todo => todo.completed).length;
+  const notCompletedCount = filteredTodos.length - completedCount;
+
+  res.json({
+    total: filteredTodos.length,
+    completed: completedCount,
+    notCompleted: notCompletedCount
+  });
+});
 
 app.get('/api/v1/todos/:id', (req, res) => {
   const { id } = req.params
@@ -38,9 +61,9 @@ app.get('/api/v1/todos/:id', (req, res) => {
 app.post('/api/v1/todos', (req, res) => {
   const { title } = req.body
 
-  const newTodo = { id: todoList.length + 1, title, completed: false }
+  const newTodo = { id: todoList.length + 1, title, completed: false, createdAt: new Date(), updatedAt: new Date() }
   todoList.push(newTodo)
-
+  
   res.status(201).json({
     data: newTodo,
   })
@@ -59,6 +82,7 @@ app.put('/api/v1/todos/:id', (req, res) => {
     ...todo,
     title: title || todo.title,
     completed: completed || todo.completed,
+    updatedAt: new Date()
   }
   todoList.splice(todoList.indexOf(todo), 1, updatedTodo)
 
