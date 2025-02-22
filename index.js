@@ -19,7 +19,7 @@ app.get('/api/v1/todos', (req, res) => {
     ? todoList.filter((todo) => todo.completed === (completed === 'true'))
     : todoList
 
-  res.send(filteredTodos)
+  res.json({ data: filteredTodos })
 })
 
 app.get('/api/v1/todos/:id', (req, res) => {
@@ -27,10 +27,12 @@ app.get('/api/v1/todos/:id', (req, res) => {
 
   const todo = todoList.find((todo) => todo.id === Number(id))
   if (!todo) {
-    return res.status(404).send('Todo not found')
+    return res.status(404).json({
+      message: "Todo not found"
+    })
   }
 
-  res.send(todo)
+  res.json({ data: todo })
 })
 
 app.post('/api/v1/todos', (req, res) => {
@@ -39,7 +41,9 @@ app.post('/api/v1/todos', (req, res) => {
   const newTodo = { id: todoList.length + 1, title, completed: false }
   todoList.push(newTodo)
 
-  res.status(201).send(newTodo)
+  res.status(201).json({
+    data: newTodo,
+  })
 })
 
 app.put('/api/v1/todos/:id', (req, res) => {
@@ -48,7 +52,7 @@ app.put('/api/v1/todos/:id', (req, res) => {
 
   const todo = todoList.find((todo) => todo.id === Number(id))
   if (!todo) {
-    return res.status(404).send('Todo not found')
+    return res.status(404).json('Todo not found')
   }
 
   const updatedTodo = {
@@ -58,7 +62,9 @@ app.put('/api/v1/todos/:id', (req, res) => {
   }
   todoList.splice(todoList.indexOf(todo), 1, updatedTodo)
 
-  res.send(updatedTodo)
+  res.json({
+    data: updatedTodo,
+  })
 })
 
 app.delete('/api/v1/todos/:id', (req, res) => {
@@ -66,11 +72,15 @@ app.delete('/api/v1/todos/:id', (req, res) => {
 
   const index = todoList.findIndex((todo) => todo.id === Number(id))
   if (index === -1) {
-    return res.status(404).send('Todo not found')
+    return res.status(404).json({
+      message: "Todo not found"
+    })
   }
 
   todoList.splice(index, 1)
-  res.status(204).send('Todo deleted')
+  res.status(204).json({
+    message: "Todo deleted"
+  })
 })
 
 // Start server
