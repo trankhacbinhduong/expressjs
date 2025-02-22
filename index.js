@@ -1,24 +1,20 @@
-import { createServer } from 'node:http';
+import express from 'express'
 
-// initializes a simple http server
-const server = createServer((req, res) => {
-  res.writeHead(200, { 'Content-Type': 'text/plain' });
+const app = express()
 
-  if (req.url === '/about') {
-    res.end('About page\n');
-    return;
-  }
+app.get('/', (req, res) => {
+  res.send('Hello World!')
+})
 
-  if (req.url === '/contact') {
-    res.end('Contact page\n');
-    return;
-  }
+app.get('/about', (req, res) => {
+  res.send('About page')
+})
 
-  res.end('Hello World!\n');
-});
+app.get('/contact', (req, res) => {
+  res.send('Contact page')
+})
 
-// starts a simple http server locally on port 3000
-server.listen(3000, '127.0.0.1', () => {
-  console.log('Listening on 127.0.0.1:3000');
-});
-
+const port = 3000
+app.listen(port, () => {
+  console.log(`Listening on 127.0.0.1:${port}`)
+})
