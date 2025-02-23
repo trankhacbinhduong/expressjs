@@ -1,5 +1,6 @@
 import express from 'express'
 import mongoose from 'mongoose'
+import todoModel from './models/todoModel.js'
 
 mongoose.connect('mongodb://127.0.0.1:27017/todo-db')
   .then(() => {
@@ -13,81 +14,63 @@ const app = express()
 // Setup middleware to parse JSON body
 app.use(express.json())
 
-// Dummy todo list
-const todoList = [
-  { id: 1, title: 'Todo 1', completed: false },
-  { id: 2, title: 'Todo 2', completed: true },
-]
-
 // Routes for todos
-app.get('/api/v1/todos', (req, res) => {
-  const { completed } = req.query
+app.get('/api/v1/todos', async (req, res) => {
+  const query = {}
+  if (req.query.completed) {
+    query.completed = req.query.completed
+  }
 
-  const filteredTodos = completed
-    ? todoList.filter((todo) => todo.completed === (completed === 'true'))
-    : todoList
+  const todos = await todoModel.find(query)
 
-  res.json({ data: filteredTodos })
+  res.json({ data: todos })
 })
 
-app.get('/api/v1/todos/:id', (req, res) => {
-  const { id } = req.params
+app.get('/api/v1/todos/:id', async (req, res) => {
+  try {
+    const { id } = req.params
 
-  const todo = todoList.find((todo) => todo.id === Number(id))
-  if (!todo) {
+    const todo = await todoModel.findById(id)
+    if (!todo) {
+      return res.status(404).json({
+        message: "Todo not found"
+      })
+    }
+
+    res.json({ data: todo })
+  } catch (error) {
     return res.status(404).json({
       message: "Todo not found"
     })
   }
-
-  res.json({ data: todo })
 })
 
-app.post('/api/v1/todos', (req, res) => {
+app.post('/api/v1/todos', async (req, res) => {
   const { title } = req.body
 
-  const newTodo = { id: todoList.length + 1, title, completed: false }
-  todoList.push(newTodo)
+  const newTodo = await todoModel.create({ title })
 
   res.status(201).json({
     data: newTodo,
   })
 })
 
-app.put('/api/v1/todos/:id', (req, res) => {
+app.put('/api/v1/todos/:id', async (req, res) => {
   const { id } = req.params
-  const { title, completed } = req.body
 
-  const todo = todoList.find((todo) => todo.id === Number(id))
-  if (!todo) {
-    return res.status(404).json('Todo not found')
-  }
-
-  const updatedTodo = {
-    ...todo,
-    title: title || todo.title,
-    completed: completed || todo.completed,
-  }
-  todoList.splice(todoList.indexOf(todo), 1, updatedTodo)
+  const todo = await todoModel.findByIdAndUpdate(id, req.body, { new: true })
 
   res.json({
-    data: updatedTodo,
+    data: todo
   })
 })
 
-app.delete('/api/v1/todos/:id', (req, res) => {
+app.delete('/api/v1/todos/:id', async (req, res) => {
   const { id } = req.params
+  const todo = await todoModel.findByIdAndDelete(id)
 
-  const index = todoList.findIndex((todo) => todo.id === Number(id))
-  if (index === -1) {
-    return res.status(404).json({
-      message: "Todo not found"
-    })
-  }
-
-  todoList.splice(index, 1)
   res.status(204).json({
-    message: "Todo deleted"
+    data: todo
   })
 })
 
